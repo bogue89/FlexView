@@ -2,6 +2,7 @@ import UIKit
 
 public class FlexView: UIView {
 
+    /// the direction in which the flexview will align items
     public enum Direction {
         case horizontal, vertical
     }
