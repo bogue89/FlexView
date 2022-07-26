@@ -10,48 +10,88 @@ import FlexView
 
 class ViewController: UIViewController {
 
-    let icons: [UIImageView] = ["star", "house", "heart"]
-        .compactMap {
-            UIImage(systemName: $0)
+    var icons: [UIImageView] {
+        Array(repeating: "photo", count: 3)
+            .compactMap {
+                UIImage(systemName: $0)
+            }
+            .map {
+                let imageview = UIImageView(image: $0)
+                let size =  CGFloat.random(in: 50...120)
+                imageview.widthAnchor.constraint(equalToConstant: size).isActive = true
+                imageview.heightAnchor.constraint(equalToConstant: size).isActive = true
+                imageview.contentMode = .scaleAspectFit
+                imageview.addBorder(.blue)
+                return imageview
         }
-        .map {
-            let imageview = UIImageView(image: $0)
-            let size =  CGFloat.random(in: 50...150)
-            imageview.widthAnchor.constraint(equalToConstant: size).isActive = true
-            imageview.heightAnchor.constraint(equalToConstant: size).isActive = true
-            imageview.contentMode = .scaleAspectFit
-            imageview.addBorder(.blue)
-            return imageview
     }
+
+    lazy
+    var flexView: FlexView = {
+        let view = FlexView()
+        view.items = icons
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.addBorder(.red)
+        return view
+    }()
+
+    lazy
+    var toolbar: UIToolbar = {
+        let view = UIToolbar()
+        view.items = [
+            UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil),
+            UIBarButtonItem(title: "Direction", style: .plain, target: self, action: #selector(changeDirection)),
+            UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(regenerateIcons)),
+            UIBarButtonItem(title: "Alignment", style: .plain, target: self, action: #selector(changeAlignment)),
+            UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil),
+        ]
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.barStyle = .black
+        view.isTranslucent = false
+        return view
+    }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
 
         view.addSubview(flexView)
-        flexView.addBorder(.red)
-        flexView.translatesAutoresizingMaskIntoConstraints = false
-        flexView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        flexView.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
+        view.addSubview(toolbar)
 
+        NSLayoutConstraint.activate([
+            flexView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            flexView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            toolbar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            toolbar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            toolbar.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
     }
+}
 
-    let flexView = FlexView()
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
+extension ViewController {
 
-        flexView.items = icons
-
-        view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(tapped)))
-    }
-
-    @objc func tapped() {
-        flexView.direction = (flexView.direction == .horizontal) ? .vertical : .horizontal
+    @objc func changeDirection() {
+        flexView.direction = (flexView.direction != .vertical) ? .vertical : .horizontal
         UIView.animate(withDuration: 0.3, animations: {
             self.flexView.layoutIfNeeded()
         })
     }
 
+    @objc func regenerateIcons() {
+        flexView.items = icons
+    }
+
+    @objc func changeAlignment() {
+        switch flexView.direction {
+        case .horizontal:
+            flexView.alignment = (flexView.alignment != .top) ? .top : .bottom
+        case .vertical:
+            flexView.alignment = (flexView.alignment != .left) ? .left : .right
+        }
+        UIView.animate(withDuration: 0.3, animations: {
+            self.flexView.layoutIfNeeded()
+        })
+    }
 }
 
 extension UIView {
