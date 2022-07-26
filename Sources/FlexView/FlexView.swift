@@ -6,11 +6,18 @@ open class FlexView: UIView {
     public enum Direction {
         case horizontal, vertical
     }
+
     public enum Alignment {
         case top, left, right, bottom, center
     }
 
     public var direction: Direction = .vertical {
+        didSet {
+            invalidateConstraints()
+        }
+    }
+
+    public var alignment: Alignment = .center {
         didSet {
             invalidateConstraints()
         }
@@ -38,31 +45,54 @@ open class FlexView: UIView {
     }
 
     private func setupConstrains() -> [NSLayoutConstraint] {
-        var constraints: [NSLayoutConstraint] = []
         switch direction {
         case .vertical:
-            var last: UIView?
-            items.forEach { view in
-                constraints.append(view.centerXAnchor.constraint(equalTo: centerXAnchor))
-                constraints.append(widthAnchor.constraint(greaterThanOrEqualTo: view.widthAnchor))
-                constraints.append(view.topAnchor.constraint(equalTo: last?.bottomAnchor ?? topAnchor))
-                last = view
-            }
-            if let last = last {
-                constraints.append(bottomAnchor.constraint(equalTo: last.bottomAnchor))
-            }
+            return setupVerticalConstraints(items, to: self)
         case .horizontal:
+            return  setupHorizontalConstraints(items, to: self)
+        }
+    }
 
-            var last: UIView?
-            items.forEach { view in
-                constraints.append(view.centerYAnchor.constraint(equalTo: centerYAnchor))
-                constraints.append(heightAnchor.constraint(greaterThanOrEqualTo: view.heightAnchor))
-                constraints.append(view.leadingAnchor.constraint(equalTo: last?.trailingAnchor ?? leadingAnchor))
-                last = view
+    public func setupVerticalConstraints(_ items: [UIView], to superview: UIView) -> [NSLayoutConstraint] {
+        var constraints: [NSLayoutConstraint] = []
+        var last: UIView?
+        items.forEach { view in
+            switch alignment {
+            case .left:
+                constraints.append(view.leadingAnchor.constraint(equalTo: superview.leadingAnchor))
+            case .right:
+                constraints.append(view.trailingAnchor.constraint(equalTo: superview.trailingAnchor))
+            default: // .center:
+                constraints.append(view.centerXAnchor.constraint(equalTo: superview.centerXAnchor))
             }
-            if let last = last {
-                constraints.append(trailingAnchor.constraint(equalTo: last.trailingAnchor))
+            constraints.append(superview.widthAnchor.constraint(greaterThanOrEqualTo: view.widthAnchor))
+            constraints.append(view.topAnchor.constraint(equalTo: last?.bottomAnchor ?? superview.topAnchor))
+            last = view
+        }
+        if let last = last {
+            constraints.append(superview.bottomAnchor.constraint(equalTo: last.bottomAnchor))
+        }
+        return constraints
+    }
+
+    private func setupHorizontalConstraints(_ items: [UIView], to superview: UIView) -> [NSLayoutConstraint] {
+        var constraints: [NSLayoutConstraint] = []
+        var last: UIView?
+        items.forEach { view in
+            switch alignment {
+            case .top:
+                constraints.append(view.topAnchor.constraint(equalTo: superview.topAnchor))
+            case .bottom:
+                constraints.append(view.bottomAnchor.constraint(equalTo: superview.bottomAnchor))
+            default: // .center:
+                constraints.append(view.centerYAnchor.constraint(equalTo: superview.centerYAnchor))
             }
+            constraints.append(superview.heightAnchor.constraint(greaterThanOrEqualTo: view.heightAnchor))
+            constraints.append(view.leadingAnchor.constraint(equalTo: last?.trailingAnchor ?? superview.leadingAnchor))
+            last = view
+        }
+        if let last = last {
+            constraints.append(superview.trailingAnchor.constraint(equalTo: last.trailingAnchor))
         }
         return constraints
     }
