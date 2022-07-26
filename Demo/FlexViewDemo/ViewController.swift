@@ -10,32 +10,37 @@ import FlexView
 
 class ViewController: UIViewController {
 
-    let flexView = FlexView()
+    let icons: [UIImageView] = ["star", "house", "heart"]
+        .compactMap {
+            UIImage(systemName: $0)
+        }
+        .map {
+            let imageview = UIImageView(image: $0)
+            let size =  CGFloat.random(in: 50...150)
+            imageview.widthAnchor.constraint(equalToConstant: size).isActive = true
+            imageview.heightAnchor.constraint(equalToConstant: size).isActive = true
+            imageview.contentMode = .scaleAspectFit
+            imageview.addBorder(.blue)
+            return imageview
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
 
         view.addSubview(flexView)
-        flexView.layer.borderColor = UIColor.red.cgColor
-        flexView.layer.borderWidth = 1
+        flexView.addBorder(.red)
         flexView.translatesAutoresizingMaskIntoConstraints = false
         flexView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         flexView.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
 
     }
 
+    let flexView = FlexView()
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
-        flexView.items = ["star", "house", "heart"].map { UIImage(systemName: $0) }.map {
-            let imageview = UIImageView(image: $0)
-            imageview.widthAnchor.constraint(equalToConstant: CGFloat.random(in: 50...150)).isActive = true
-            imageview.heightAnchor.constraint(equalToConstant: CGFloat.random(in: 50...150)).isActive = true
-            imageview.contentMode = .scaleAspectFit
-            return imageview
-        }
-
+        flexView.items = icons
 
         view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(tapped)))
     }
@@ -49,4 +54,9 @@ class ViewController: UIViewController {
 
 }
 
-
+extension UIView {
+    func addBorder(_ color: UIColor, width: CGFloat = 1) {
+        layer.borderColor = color.cgColor
+        layer.borderWidth = width
+    }
+}

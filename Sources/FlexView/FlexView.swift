@@ -1,10 +1,13 @@
 import UIKit
 
-public class FlexView: UIView {
+open class FlexView: UIView {
 
     /// the direction in which the flexview will align items
     public enum Direction {
         case horizontal, vertical
+    }
+    public enum Alignment {
+        case top, left, right, bottom, center
     }
 
     public var direction: Direction = .vertical {
